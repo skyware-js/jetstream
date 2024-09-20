@@ -120,14 +120,21 @@ const jetstream = new Jetstream({
 				if (data.time_us > (this.cursor ?? 0)) this.cursor = data.time_us;
 				switch (data.type) {
 					case EventType.Commit:
+						if (!data.commit?.collection || !data.commit.rkey || !data.commit.rev) {
+							return;
+						}
+						if (data.commit.type === CommitType.Create && !data.commit.record) return;
+
 						this.emit("commit", data);
 						// @ts-expect-error – We know we can use collection name as an event.
 						this.emit(data.commit.collection, data);
 						break;
 					case EventType.Account:
+						if (!data.account?.did) return;
 						this.emit("account", data);
 						break;
 					case EventType.Identity:
+						if (!data.account?.did) return;
 						this.emit("identity", data);
 						break;
 				}
