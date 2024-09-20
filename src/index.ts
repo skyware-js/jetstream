@@ -33,6 +33,11 @@ export interface JetstreamOptions<WantedCollections extends Collection = Collect
 	 * The Unix timestamp in microseconds that you want to receive updates from.
 	 */
 	cursor?: string;
+	/**
+	 * The WebSocket implementation to use (e.g. `import ws from "ws"`).
+	 * Not required if you are on Node 21.0.0 or newer, or another environment that provides a WebSocket implementation.
+	 */
+	ws?: unknown;
 }
 
 /**
@@ -63,9 +68,27 @@ export class Jetstream<WantedCollections extends Collection = Collection>
 	/** The current cursor. */
 	public cursor?: number;
 
+	/** The WebSocket implementation to use. */
+	private wsImpl?: unknown;
+
 	constructor(options?: JetstreamOptions<WantedCollections>) {
 		super();
 		options ??= {};
+		if (options.ws) this.wsImpl = options.ws;
+
+		if (typeof globalThis.WebSocket === "undefined" && !this.wsImpl) {
+			throw new Error(
+				`No WebSocket implementation was found in your environment. You must provide an implementation as the \`ws\` option.
+
+For example, in a Node.js environment, \`npm install ws\` and then:
+import { Jetstream } from "@skyware/jetstream";
+import WebSocket from "ws";
+
+const jetstream = new Jetstream({
+	ws: WebSocket,
+});`,
+			);
+		}
 
 		const url = new URL(options.endpoint ?? "wss://jetstream.atproto.tools/subscribe");
 		options.wantedCollections?.forEach((collection) => {
@@ -82,7 +105,7 @@ export class Jetstream<WantedCollections extends Collection = Collection>
 	 * Opens a WebSocket connection to the server.
 	 */
 	start() {
-		this.ws = new WebSocket(this.url.toString());
+		this.ws = new WebSocket(this.url.toString(), null, { WebSocket: this.wsImpl });
 
 		this.ws.onopen = () => this.emit("open");
 		this.ws.onclose = () => this.emit("close");
