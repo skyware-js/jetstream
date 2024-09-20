@@ -1,0 +1,39 @@
+{
+	"name": "@skyware/jetstream",
+	"type": "module",
+	"description": "A fully typed client for the Bluesky Jetstream (https://github.com/bluesky-social/jetstream) service.",
+	"version": "0.1.3",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"license": "MPL-2.0",
+	"repository": "https://github.com/skyware-js/jetstream",
+	"homepage": "https://skyware.js.org/docs/jetstream",
+	"keywords": [
+		"bluesky",
+		"jetstream",
+		"atproto",
+		"skyware"
+	],
+	"scripts": {
+		"build": "tsc",
+		"lint": "eslint . --ext .ts",
+		"fmt": "dprint fmt",
+		"prepublish": "pnpm lint && pnpm fmt && pnpm build"
+	},
+	"devDependencies": {
+		"@atcute/client": "^2.0.0",
+		"@types/node": "^22.5.4",
+		"@typescript-eslint/eslint-plugin": "^6.7.4",
+		"@typescript-eslint/parser": "^6.7.4",
+		"dprint": "^0.41.0",
+		"eslint": "^8.50.0",
+		"typescript": "^5.5.4"
+	},
+	"files": [
+		"dist"
+	],
+	"dependencies": {
+		"@atcute/bluesky": "^1.0.6",
+		"partysocket": "^1.0.2"
+	}
+}

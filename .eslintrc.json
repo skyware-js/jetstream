@@ -1,0 +1,16 @@
+{
+	"extends": ["plugin:@typescript-eslint/strict-type-checked"],
+	"plugins": ["@typescript-eslint"],
+	"parser": "@typescript-eslint/parser",
+	"parserOptions": {
+		"project": "./tsconfig.json"
+	},
+	"rules": {
+		"@typescript-eslint/ban-types": "off",
+		"@typescript-eslint/no-explicit-any": "off",
+		"@typescript-eslint/no-unsafe-argument": "off",
+		"@typescript-eslint/unified-signatures": "off"
+	},
+	"ignorePatterns": ["dist", "node_modules"],
+	"root": true
+}
