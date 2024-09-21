@@ -266,6 +266,7 @@ export type CollectionOrWildcard = PossibleCollectionWildcards<keyof Records> | 
 
 /**
  * The types of events that are emitted by {@link Jetstream}.
+ * @enum
  */
 export const EventType = {
 	/** A new commit. */
@@ -279,6 +280,7 @@ export type EventType = typeof EventType[keyof typeof EventType];
 
 /**
  * The types of commits that can be received.
+ * @enum
  */
 export const CommitType = {
 	/** A record was created. */
