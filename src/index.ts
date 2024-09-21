@@ -56,9 +56,10 @@ export type JetstreamEvents<WantedCollections extends Collection = Collection> =
 /**
  * The Jetstream client.
  */
-export class Jetstream<WantedCollections extends Collection = Collection>
-	extends EventEmitter<JetstreamEvents<WantedCollections>>
-{
+export class Jetstream<
+	WantedCollections extends CollectionOrWildcard = CollectionOrWildcard,
+	ResolvedCollections extends Collection = ResolveLexiconWildcard<WantedCollections>,
+> extends EventEmitter<JetstreamEvents<ResolvedCollections>> {
 	/** WebSocket connection to the server. */
 	public ws?: WebSocket;
 
@@ -114,7 +115,7 @@ const jetstream = new Jetstream({
 		this.ws.onmessage = (event) => {
 			try {
 				const data = JSON.parse(event.data) as
-					| CommitEvent<WantedCollections>
+					| CommitEvent<ResolvedCollections>
 					| AccountEvent
 					| IdentityEvent;
 				if (data.time_us > (this.cursor ?? 0)) this.cursor = data.time_us;
@@ -156,7 +157,7 @@ const jetstream = new Jetstream({
 	 * @param collection The name of the collection to listen for.
 	 * @param listener A callback function that receives the commit event.
 	 */
-	onCreate<T extends WantedCollections>(
+	onCreate<T extends ResolvedCollections>(
 		collection: T,
 		listener: (event: CommitCreateEvent<T>) => void,
 	) {
@@ -170,7 +171,7 @@ const jetstream = new Jetstream({
 	 * @param collection The name of the collection to listen for.
 	 * @param listener A callback function that receives the commit event.
 	 */
-	onUpdate<T extends WantedCollections>(
+	onUpdate<T extends ResolvedCollections>(
 		collection: T,
 		listener: (event: CommitEvent<T>) => void,
 	) {
@@ -184,7 +185,7 @@ const jetstream = new Jetstream({
 	 * @param collection The name of the collection to listen for.
 	 * @param listener A callback function that receives the commit event.
 	 */
-	onDelete<T extends WantedCollections>(
+	onDelete<T extends ResolvedCollections>(
 		collection: T,
 		listener: (event: CommitEvent<T>) => void,
 	) {
@@ -198,7 +199,7 @@ const jetstream = new Jetstream({
 	/** Emitted when the connection is closed. */
 	override on(event: "close", listener: () => void): this;
 	/** Emitted when any commit is received. */
-	override on(event: "commit", listener: (event: CommitEvent<WantedCollections>) => void): this;
+	override on(event: "commit", listener: (event: CommitEvent<ResolvedCollections>) => void): this;
 	/** Emitted when an account is updated. */
 	override on(event: "account", listener: (event: AccountEvent) => void): this;
 	/** Emitted when an identity event is received. */
@@ -213,7 +214,7 @@ const jetstream = new Jetstream({
 	 * @param collection The name of the collection.
 	 * @param listener  A callback function that receives the commit event.
 	 */
-	override on<T extends WantedCollections>(
+	override on<T extends ResolvedCollections>(
 		collection: T,
 		listener: (event: CommitEvent<T>) => void,
 	): this;
@@ -229,8 +230,39 @@ const jetstream = new Jetstream({
 /** Resolves a lexicon name to its record type. */
 export type ResolveLexicon<T extends string> = T extends keyof Records ? Records[T] : { $type: T };
 
+/** Checks if any member of a union is assignable to a given type. */
+type UnionMemberIsAssignableTo<Union, AssignableTo> =
+	// Distribute over union members
+	Union extends Union
+		// `Union` here refers to a given union member
+		? Union extends AssignableTo ? true : never
+		: never;
+
+/** Resolves a wildcard string to the record types it matches. */
+export type ResolveLexiconWildcard<T extends string> =
+	// Match the prefix
+	T extends `${infer Prefix}*`
+		// Check that at least one collection name matches the prefix (we use `true extends` because `never` extends everything)
+		? true extends UnionMemberIsAssignableTo<keyof Records, `${Prefix}${string}`>
+			// If so, return known matching collection names
+			? keyof Records & `${Prefix}${string}` extends infer Lexicon extends string ? Lexicon
+			: never
+			// If no collection name matches the prefix, return as a type-level wildcard string
+		: `${Prefix}${string}`
+		// If there's no wildcard, return the original string
+		: T;
+
 /** The name of a collection. */
 export type Collection = (keyof Records) | (string & {});
+
+/** Generates all possible wildcard strings that match a given collection name. */
+type PossibleCollectionWildcards<CollectionName extends string> = CollectionName extends
+	`${infer Prefix}.${infer Suffix}`
+	? `${Prefix}.*` | `${Prefix}.${PossibleCollectionWildcards<Suffix>}`
+	: never;
+
+/** The name of a collection or a wildcard string matching multiple collections. */
+export type CollectionOrWildcard = PossibleCollectionWildcards<keyof Records> | Collection;
 
 /**
  * The types of events that are emitted by {@link Jetstream}.
