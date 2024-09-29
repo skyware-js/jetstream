@@ -32,7 +32,7 @@ export interface JetstreamOptions<WantedCollections extends Collection = Collect
 	/**
 	 * The Unix timestamp in microseconds that you want to receive updates from.
 	 */
-	cursor?: string;
+	cursor?: number;
 	/**
 	 * The WebSocket implementation to use (e.g. `import ws from "ws"`).
 	 * Not required if you are on Node 21.0.0 or newer, or another environment that provides a WebSocket implementation.
@@ -64,7 +64,7 @@ export class Jetstream<
 	public ws?: WebSocket;
 
 	/** The full connection URL. */
-	public url: string;
+	public url: URL;
 
 	/** The current cursor. */
 	public cursor?: number;
@@ -91,22 +91,22 @@ const jetstream = new Jetstream({
 			);
 		}
 
-		const url = new URL(options.endpoint ?? "wss://jetstream.atproto.tools/subscribe");
+		this.url = new URL(options.endpoint ?? "wss://jetstream.atproto.tools/subscribe");
 		options.wantedCollections?.forEach((collection) => {
-			url.searchParams.append("wantedCollections", collection);
+			this.url.searchParams.append("wantedCollections", collection);
 		});
 		options.wantedDids?.forEach((did) => {
-			url.searchParams.append("wantedDids", did);
+			this.url.searchParams.append("wantedDids", did);
 		});
-		if (options.cursor) url.searchParams.append("cursor", options.cursor);
-		this.url = url.toString();
+
+		if (options.cursor) this.cursor = options.cursor;
 	}
 
 	/**
 	 * Opens a WebSocket connection to the server.
 	 */
 	start() {
-		this.ws = new WebSocket(this.url.toString(), null, { WebSocket: this.wsImpl });
+		this.ws = new WebSocket(() => this.createUrl(), null, { WebSocket: this.wsImpl });
 
 		this.ws.onopen = () => this.emit("open");
 		this.ws.onclose = () => this.emit("close");
@@ -192,6 +192,11 @@ const jetstream = new Jetstream({
 		this.on(collection, ({ commit, ...event }) => {
 			if (commit.type === CommitType.Delete) listener({ commit, ...event });
 		});
+	}
+
+	private createUrl() {
+		if (this.cursor) this.url.searchParams.set("cursor", this.cursor.toString());
+		return this.url.toString();
 	}
 
 	/** Emitted when the connection is opened. */
