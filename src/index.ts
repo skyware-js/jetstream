@@ -135,7 +135,7 @@ const jetstream = new Jetstream({
 						this.emit("account", data);
 						break;
 					case EventType.Identity:
-						if (!data.account?.did) return;
+						if (!data.did) return;
 						this.emit("identity", data);
 						break;
 				}
