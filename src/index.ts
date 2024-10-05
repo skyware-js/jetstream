@@ -135,7 +135,7 @@ const jetstream = new Jetstream({
 						this.emit("account", data);
 						break;
 					case EventType.Identity:
-						if (!data.did) return;
+						if (!data.identity?.did) return;
 						this.emit("identity", data);
 						break;
 				}
@@ -342,7 +342,7 @@ export interface AccountEvent extends EventBase {
  */
 export interface IdentityEvent extends EventBase {
 	type: typeof EventType.Identity;
-	account: ComAtprotoSyncSubscribeRepos.Identity;
+	identity: ComAtprotoSyncSubscribeRepos.Identity;
 }
 
 /**
