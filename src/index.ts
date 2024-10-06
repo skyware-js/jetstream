@@ -173,7 +173,7 @@ const jetstream = new Jetstream({
 	 */
 	onUpdate<T extends ResolvedCollections>(
 		collection: T,
-		listener: (event: CommitEvent<T>) => void,
+		listener: (event: CommitUpdateEvent<T>) => void,
 	) {
 		this.on(collection, ({ commit, ...event }) => {
 			if (commit.type === CommitType.Update) listener({ commit, ...event });
@@ -187,7 +187,7 @@ const jetstream = new Jetstream({
 	 */
 	onDelete<T extends ResolvedCollections>(
 		collection: T,
-		listener: (event: CommitEvent<T>) => void,
+		listener: (event: CommitDeleteEvent<T>) => void,
 	) {
 		this.on(collection, ({ commit, ...event }) => {
 			if (commit.type === CommitType.Delete) listener({ commit, ...event });
