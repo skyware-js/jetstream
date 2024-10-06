@@ -16,7 +16,7 @@ export interface Records extends _Records {}
 export interface JetstreamOptions<WantedCollections extends Collection = Collection> {
 	/**
 	 * The full subscription endpoint to connect to.
-	 * @default "wss://jetstream.atproto.tools/subscribe"
+	 * @default "wss://jetstream1.us-east.bsky.network/subscribe"
 	 */
 	endpoint?: string;
 	/**
@@ -91,7 +91,7 @@ const jetstream = new Jetstream({
 			);
 		}
 
-		this.url = new URL(options.endpoint ?? "wss://jetstream.atproto.tools/subscribe");
+		this.url = new URL(options.endpoint ?? "wss://jetstream1.us-east.bsky.network/subscribe");
 		options.wantedCollections?.forEach((collection) => {
 			this.url.searchParams.append("wantedCollections", collection);
 		});
