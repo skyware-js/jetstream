@@ -112,31 +112,33 @@ const jetstream = new Jetstream({
 		this.ws.onclose = () => this.emit("close");
 		this.ws.onerror = ({ error }) => this.emit("error", error, this.cursor);
 
-		this.ws.onmessage = (event) => {
+		this.ws.onmessage = (data) => {
 			try {
-				const data = JSON.parse(event.data) as
+				const event = JSON.parse(data.data) as
 					| CommitEvent<ResolvedCollections>
 					| AccountEvent
 					| IdentityEvent;
-				if (data.time_us > (this.cursor ?? 0)) this.cursor = data.time_us;
-				switch (data.type) {
+				if (event.time_us > (this.cursor ?? 0)) this.cursor = event.time_us;
+				switch (event.kind) {
 					case EventType.Commit:
-						if (!data.commit?.collection || !data.commit.rkey || !data.commit.rev) {
+						if (!event.commit?.collection || !event.commit.rkey || !event.commit.rev) {
 							return;
 						}
-						if (data.commit.type === CommitType.Create && !data.commit.record) return;
+						if (event.commit.operation === CommitType.Create && !event.commit.record) {
+							return;
+						}
 
-						this.emit("commit", data);
+						this.emit("commit", event);
 						// @ts-expect-error – We know we can use collection name as an event.
-						this.emit(data.commit.collection, data);
+						this.emit(event.commit.collection, event);
 						break;
 					case EventType.Account:
-						if (!data.account?.did) return;
-						this.emit("account", data);
+						if (!event.account?.did) return;
+						this.emit("account", event);
 						break;
 					case EventType.Identity:
-						if (!data.identity?.did) return;
-						this.emit("identity", data);
+						if (!event.identity?.did) return;
+						this.emit("identity", event);
 						break;
 				}
 			} catch (e) {
@@ -162,7 +164,7 @@ const jetstream = new Jetstream({
 		listener: (event: CommitCreateEvent<T>) => void,
 	) {
 		this.on(collection, ({ commit, ...event }) => {
-			if (commit.type === CommitType.Create) listener({ commit, ...event });
+			if (commit.operation === CommitType.Create) listener({ commit, ...event });
 		});
 	}
 
@@ -176,7 +178,7 @@ const jetstream = new Jetstream({
 		listener: (event: CommitUpdateEvent<T>) => void,
 	) {
 		this.on(collection, ({ commit, ...event }) => {
-			if (commit.type === CommitType.Update) listener({ commit, ...event });
+			if (commit.operation === CommitType.Update) listener({ commit, ...event });
 		});
 	}
 
@@ -190,7 +192,7 @@ const jetstream = new Jetstream({
 		listener: (event: CommitDeleteEvent<T>) => void,
 	) {
 		this.on(collection, ({ commit, ...event }) => {
-			if (commit.type === CommitType.Delete) listener({ commit, ...event });
+			if (commit.operation === CommitType.Delete) listener({ commit, ...event });
 		});
 	}
 
@@ -232,10 +234,10 @@ const jetstream = new Jetstream({
 	}
 }
 
-/** Resolves a lexicon name to its record type. */
+/** Resolves a lexicon name to its record operation. */
 export type ResolveLexicon<T extends string> = T extends keyof Records ? Records[T] : { $type: T };
 
-/** Checks if any member of a union is assignable to a given type. */
+/** Checks if any member of a union is assignable to a given operation. */
 type UnionMemberIsAssignableTo<Union, AssignableTo> =
 	// Distribute over union members
 	Union extends Union
@@ -252,7 +254,7 @@ export type ResolveLexiconWildcard<T extends string> =
 			// If so, return known matching collection names
 			? keyof Records & `${Prefix}${string}` extends infer Lexicon extends string ? Lexicon
 			: never
-			// If no collection name matches the prefix, return as a type-level wildcard string
+			// If no collection name matches the prefix, return as a operation-level wildcard string
 		: `${Prefix}${string}`
 		// If there's no wildcard, return the original string
 		: T;
@@ -275,11 +277,11 @@ export type CollectionOrWildcard = PossibleCollectionWildcards<keyof Records> | 
  */
 export const EventType = {
 	/** A new commit. */
-	Commit: "com",
+	Commit: "commit",
 	/** An account's status was updated. */
-	Account: "acc",
+	Account: "account",
 	/** An account's identity was updated. */
-	Identity: "id",
+	Identity: "identity",
 } as const;
 export type EventType = typeof EventType[keyof typeof EventType];
 
@@ -289,28 +291,28 @@ export type EventType = typeof EventType[keyof typeof EventType];
  */
 export const CommitType = {
 	/** A record was created. */
-	Create: "c",
+	Create: "create",
 	/** A record was updated. */
-	Update: "u",
+	Update: "update",
 	/** A record was deleted. */
-	Delete: "d",
+	Delete: "delete",
 } as const;
 export type CommitType = typeof CommitType[keyof typeof CommitType];
 
 /**
- * The base type for events emitted by the {@link Jetstream} class.
+ * The base operation for events emitted by the {@link Jetstream} class.
  */
 export interface EventBase {
 	did: At.DID;
 	time_us: number;
-	type: EventType;
+	kind: EventType;
 }
 
 /**
  * A commit event. Represents a commit to a user repository.
  */
 export interface CommitEvent<RecordType extends string> extends EventBase {
-	type: typeof EventType.Commit;
+	kind: typeof EventType.Commit;
 	commit: Commit<RecordType>;
 }
 
@@ -333,7 +335,7 @@ export interface CommitDeleteEvent<RecordType extends string> extends CommitEven
  * An account event. Represents a change to an account's status on a host (e.g. PDS or Relay).
  */
 export interface AccountEvent extends EventBase {
-	type: typeof EventType.Account;
+	kind: typeof EventType.Account;
 	account: ComAtprotoSyncSubscribeRepos.Account;
 }
 
@@ -341,15 +343,15 @@ export interface AccountEvent extends EventBase {
  * An identity event. Represents a change to an account's identity.
  */
 export interface IdentityEvent extends EventBase {
-	type: typeof EventType.Identity;
+	kind: typeof EventType.Identity;
 	identity: ComAtprotoSyncSubscribeRepos.Identity;
 }
 
 /**
- * The base type for commit events.
+ * The base operation for commit events.
  */
 export interface CommitBase<RecordType extends string> {
-	type: CommitType;
+	operation: CommitType;
 	rev: string;
 	collection: RecordType;
 	rkey: string;
@@ -359,7 +361,7 @@ export interface CommitBase<RecordType extends string> {
  * A commit event representing a new record.
  */
 export interface CommitCreate<RecordType extends string> extends CommitBase<RecordType> {
-	type: typeof CommitType.Create;
+	operation: typeof CommitType.Create;
 	record: ResolveLexicon<RecordType>;
 	cid: At.CID;
 }
@@ -368,7 +370,7 @@ export interface CommitCreate<RecordType extends string> extends CommitBase<Reco
  * A commit event representing an update to an existing record.
  */
 export interface CommitUpdate<RecordType extends string> extends CommitBase<RecordType> {
-	type: typeof CommitType.Update;
+	operation: typeof CommitType.Update;
 	record: ResolveLexicon<RecordType>;
 	cid: At.CID;
 }
@@ -377,7 +379,7 @@ export interface CommitUpdate<RecordType extends string> extends CommitBase<Reco
  * A commit event representing a deletion of an existing record.
  */
 export interface CommitDelete<RecordType extends string> extends CommitBase<RecordType> {
-	type: typeof CommitType.Delete;
+	operation: typeof CommitType.Delete;
 }
 
 /**
