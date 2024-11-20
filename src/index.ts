@@ -30,6 +30,12 @@ export interface JetstreamOptions<WantedCollections extends Collection = Collect
 	 */
 	wantedDids?: Array<string>;
 	/**
+	 * The maximum size of a payload that this client would like to receive.
+	 * Zero means no limit, negative values are treated as zero.
+	 * @default 0
+	 */
+	maxMessageSizeBytes?: number;
+	/**
 	 * The Unix timestamp in microseconds that you want to receive updates from.
 	 */
 	cursor?: number;
@@ -98,7 +104,9 @@ const jetstream = new Jetstream({
 		options.wantedDids?.forEach((did) => {
 			this.url.searchParams.append("wantedDids", did);
 		});
-
+		if (options.maxMessageSizeBytes) {
+			this.url.searchParams.append("maxMessageSizeBytes", `${options.maxMessageSizeBytes}`);
+		}
 		if (options.cursor) this.cursor = options.cursor;
 	}
 
