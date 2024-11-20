@@ -204,6 +204,36 @@ const jetstream = new Jetstream({
 		});
 	}
 
+	/**
+	 * Send a message to update options for the duration of this connection.
+	 */
+	updateOptions(
+		payload: Pick<JetstreamOptions, "wantedDids" | "wantedCollections" | "maxMessageSizeBytes">,
+	) {
+		if (!this.ws) throw new Error("Not connected.");
+
+		if (payload.wantedDids) {
+			this.url.searchParams.delete("wantedDids");
+			payload.wantedDids.forEach((did) => {
+				this.url.searchParams.append("wantedDids", did);
+			});
+		}
+		if (payload.wantedCollections) {
+			this.url.searchParams.delete("wantedCollections");
+			payload.wantedCollections.forEach((collection) => {
+				this.url.searchParams.append("wantedCollections", collection);
+			});
+		}
+		if (payload.maxMessageSizeBytes) {
+			this.url.searchParams.set(
+				"maxMessageSizeBytes",
+				payload.maxMessageSizeBytes.toString(),
+			);
+		}
+
+		this.ws.send(JSON.stringify({ type: "options_update", payload }));
+	}
+
 	private createUrl() {
 		if (this.cursor) this.url.searchParams.set("cursor", this.cursor.toString());
 		return this.url.toString();
