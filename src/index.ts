@@ -6,6 +6,8 @@ import type {
 import "@atcute/bluesky/lexicons";
 import { EventEmitter } from "node:events";
 import { WebSocket } from "partysocket";
+import { Decompressor } from "zstd-napi";
+import { zstdDictionary } from "./zstd-dictionary.js";
 
 /** Record mappings. */
 export interface Records extends _Records {}
@@ -35,6 +37,12 @@ export interface JetstreamOptions<WantedCollections extends Collection = Collect
 	 * @default 0
 	 */
 	maxMessageSizeBytes?: number;
+	/**
+	 * Enable zstd compression. This will reduce ingress bandwidth by about 50%.
+	 * You must have the `zstd-napi` package installed to use this.
+	 * @default false
+	 */
+	compress?: boolean;
 	/**
 	 * The Unix timestamp in microseconds that you want to receive updates from.
 	 */
@@ -75,6 +83,9 @@ export class Jetstream<
 	/** The current cursor. */
 	public cursor?: number;
 
+	/** The zstd decompressor. */
+	private decompressor?: Decompressor;
+
 	/** The WebSocket implementation to use. */
 	private wsImpl?: unknown;
 
@@ -107,6 +118,17 @@ const jetstream = new Jetstream({
 		if (options.maxMessageSizeBytes) {
 			this.url.searchParams.append("maxMessageSizeBytes", `${options.maxMessageSizeBytes}`);
 		}
+		if (options.compress) {
+			void import("zstd-napi").then(({ Decompressor }) => {
+				this.decompressor = new Decompressor();
+				const dictionaryBytes = new TextEncoder().encode(zstdDictionary);
+				this.decompressor.loadDictionary(dictionaryBytes);
+				this.url.searchParams.append("compress", "true");
+			}).catch((e) => {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+				console.error(e);
+			});
+		}
 		if (options.cursor) this.cursor = options.cursor;
 	}
 
@@ -120,12 +142,13 @@ const jetstream = new Jetstream({
 		this.ws.onclose = () => this.emit("close");
 		this.ws.onerror = ({ error }) => this.emit("error", error, this.cursor);
 
-		this.ws.onmessage = (data) => {
+		this.ws.onmessage = ({ data }) => {
 			try {
-				const event = JSON.parse(data.data) as
-					| CommitEvent<ResolvedCollections>
-					| AccountEvent
-					| IdentityEvent;
+				const event =
+					(this.decompressor ? this.decompressor.decompress(data) : JSON.parse(data)) as
+						| CommitEvent<ResolvedCollections>
+						| AccountEvent
+						| IdentityEvent;
 				if (event.time_us > (this.cursor ?? 0)) this.cursor = event.time_us;
 				switch (event.kind) {
 					case EventType.Commit:
@@ -427,3 +450,7 @@ export type Commit<RecordType extends string> =
 	| CommitCreate<RecordType>
 	| CommitUpdate<RecordType>
 	| CommitDelete<RecordType>;
+
+const jetstream = new Jetstream({ compress: true });
+
+jetstream.start();
