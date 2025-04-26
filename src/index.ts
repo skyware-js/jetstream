@@ -327,7 +327,7 @@ export type CommitType = typeof CommitType[keyof typeof CommitType];
  * The base operation for events emitted by the {@link Jetstream} class.
  */
 export interface EventBase {
-	did: At.DID;
+	did: At.Did;
 	time_us: number;
 	kind: EventType;
 }
@@ -387,7 +387,7 @@ export interface CommitBase<RecordType extends string> {
 export interface CommitCreate<RecordType extends string> extends CommitBase<RecordType> {
 	operation: typeof CommitType.Create;
 	record: ResolveLexicon<RecordType>;
-	cid: At.CID;
+	cid: At.Cid;
 }
 
 /**
@@ -396,7 +396,7 @@ export interface CommitCreate<RecordType extends string> extends CommitBase<Reco
 export interface CommitUpdate<RecordType extends string> extends CommitBase<RecordType> {
 	operation: typeof CommitType.Update;
 	record: ResolveLexicon<RecordType>;
-	cid: At.CID;
+	cid: At.Cid;
 }
 
 /**
