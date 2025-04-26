@@ -4,8 +4,8 @@ import type {
 	Records as _Records,
 } from "@atcute/client/lexicons";
 import "@atcute/bluesky/lexicons";
-import { EventEmitter } from "node:events";
 import { WebSocket } from "partysocket";
+import { TinyEmitter } from "tiny-emitter";
 
 /** Record mappings. */
 export interface Records extends _Records {}
@@ -47,25 +47,12 @@ export interface JetstreamOptions<WantedCollections extends Collection = Collect
 }
 
 /**
- * The events that are emitted by the {@link Jetstream} class.
- * @see {@link Jetstream#on}
- */
-export type JetstreamEvents<WantedCollections extends Collection = Collection> = {
-	open: [];
-	close: [];
-	commit: [event: CommitEvent<WantedCollections>];
-	account: [event: AccountEvent];
-	identity: [event: IdentityEvent];
-	error: [error: Error, cursor?: number];
-};
-
-/**
  * The Jetstream client.
  */
 export class Jetstream<
 	WantedCollections extends CollectionOrWildcard = CollectionOrWildcard,
 	ResolvedCollections extends Collection = ResolveLexiconWildcard<WantedCollections>,
-> extends EventEmitter<JetstreamEvents<ResolvedCollections>> {
+> extends TinyEmitter {
 	/** WebSocket connection to the server. */
 	public ws?: WebSocket;
 
@@ -137,7 +124,6 @@ const jetstream = new Jetstream({
 						}
 
 						this.emit("commit", event);
-						// @ts-expect-error – We know we can use collection name as an event.
 						this.emit(event.commit.collection, event);
 						break;
 					case EventType.Account:
