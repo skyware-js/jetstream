@@ -1,14 +1,13 @@
-import type {
-	At,
-	ComAtprotoSyncSubscribeRepos,
-	Records as _Records,
-} from "@atcute/client/lexicons";
+import { ComAtprotoSyncSubscribeRepos } from "@atcute/atproto";
+import type { Cid, Did } from "@atcute/lexicons";
+import { Records as _Records } from "@atcute/lexicons/ambient";
 import "@atcute/bluesky/lexicons";
 import { WebSocket } from "partysocket";
 import { TinyEmitter } from "tiny-emitter";
 
 /** Record mappings. */
-export interface Records extends _Records {}
+export interface Records extends _Records {
+}
 
 /**
  * Options for the {@link Jetstream} class.
@@ -327,7 +326,7 @@ export type CommitType = typeof CommitType[keyof typeof CommitType];
  * The base operation for events emitted by the {@link Jetstream} class.
  */
 export interface EventBase {
-	did: At.Did;
+	did: Did;
 	time_us: number;
 	kind: EventType;
 }
@@ -387,7 +386,7 @@ export interface CommitBase<RecordType extends string> {
 export interface CommitCreate<RecordType extends string> extends CommitBase<RecordType> {
 	operation: typeof CommitType.Create;
 	record: ResolveLexicon<RecordType>;
-	cid: At.Cid;
+	cid: Cid;
 }
 
 /**
@@ -396,7 +395,7 @@ export interface CommitCreate<RecordType extends string> extends CommitBase<Reco
 export interface CommitUpdate<RecordType extends string> extends CommitBase<RecordType> {
 	operation: typeof CommitType.Update;
 	record: ResolveLexicon<RecordType>;
-	cid: At.Cid;
+	cid: Cid;
 }
 
 /**
