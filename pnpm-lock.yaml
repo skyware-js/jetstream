@@ -11,9 +11,6 @@ importers:
       '@atcute/atproto':
         specifier: ^3.1.0
         version: 3.1.0
-      '@atcute/bluesky':
-        specifier: ^3.1.4
-        version: 3.1.4
       '@atcute/lexicons':
         specifier: ^1.1.0
         version: 1.1.0
@@ -54,9 +51,6 @@ packages:
 
   '@atcute/atproto@3.1.0':
     resolution: {integrity: sha512-aJbDsY7FcIh8APWKAimBtshPwqoRE056tc0UV6vw4TW4e3nYaHedoJmKhlh/k8KQWxyw64MQThNGMaC89HNoTg==}
-
-  '@atcute/bluesky@3.1.4':
-    resolution: {integrity: sha512-iSdZGk/UktgKpT/lI0/YxRjM3E5dkd6/vIa2mgH82lgRjI0jH5LJAfLXPyr2mPeZ/qku1gf2/KrkqJ9dfiNxVw==}
 
   '@atcute/client@4.0.3':
     resolution: {integrity: sha512-RIOZWFVLca/HiPAAUDqQPOdOreCxTbL5cb+WUf5yqQOKIu5yEAP3eksinmlLmgIrlr5qVOE7brazUUzaskFCfw==}
@@ -638,11 +632,6 @@ snapshots:
 
   '@atcute/atproto@3.1.0':
     dependencies:
-      '@atcute/lexicons': 1.1.0
-
-  '@atcute/bluesky@3.1.4':
-    dependencies:
-      '@atcute/atproto': 3.1.0
       '@atcute/lexicons': 1.1.0
 
   '@atcute/client@4.0.3':

@@ -1,7 +1,6 @@
 import { ComAtprotoSyncSubscribeRepos } from "@atcute/atproto";
 import type { Cid, Did } from "@atcute/lexicons";
 import { Records as _Records } from "@atcute/lexicons/ambient";
-import "@atcute/bluesky/lexicons";
 import { WebSocket } from "partysocket";
 import { TinyEmitter } from "tiny-emitter";
 
