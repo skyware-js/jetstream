@@ -1,7 +1,7 @@
-import { ComAtprotoSyncSubscribeRepos } from "@atcute/atproto";
+import type { ComAtprotoSyncSubscribeRepos } from "@atcute/atproto";
+import type {} from "@atcute/bluesky"; // Needed for collection autocomplete
 import type { Cid, Did } from "@atcute/lexicons";
-import { Records as _Records } from "@atcute/lexicons/ambient";
-import "@atcute/bluesky/lexicons";
+import type { Records as _Records } from "@atcute/lexicons/ambient";
 import { WebSocket } from "partysocket";
 import { TinyEmitter } from "tiny-emitter";
 
@@ -277,7 +277,7 @@ export type ResolveLexiconWildcard<T extends string> =
 			// If so, return known matching collection names
 			? keyof Records & `${Prefix}${string}` extends infer Lexicon extends string ? Lexicon
 			: never
-			// If no collection name matches the prefix, return as a operation-level wildcard string
+			// If no collection name matches the prefix, return as a type-level wildcard string
 		: `${Prefix}${string}`
 		// If there's no wildcard, return the original string
 		: T;

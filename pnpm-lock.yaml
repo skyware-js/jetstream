@@ -24,9 +24,6 @@ importers:
         specifier: ^2.1.0
         version: 2.1.0
     devDependencies:
-      '@atcute/client':
-        specifier: ^4.0.3
-        version: 4.0.3
       '@types/node':
         specifier: ^22.5.4
         version: 22.5.4
@@ -58,18 +55,8 @@ packages:
   '@atcute/bluesky@3.1.4':
     resolution: {integrity: sha512-iSdZGk/UktgKpT/lI0/YxRjM3E5dkd6/vIa2mgH82lgRjI0jH5LJAfLXPyr2mPeZ/qku1gf2/KrkqJ9dfiNxVw==}
 
-  '@atcute/client@4.0.3':
-    resolution: {integrity: sha512-RIOZWFVLca/HiPAAUDqQPOdOreCxTbL5cb+WUf5yqQOKIu5yEAP3eksinmlLmgIrlr5qVOE7brazUUzaskFCfw==}
-
-  '@atcute/identity@1.0.3':
-    resolution: {integrity: sha512-mNMxbKHFGys03A8JXKk0KfMBzdd0vrYMzZZWjpw1nYTs0+ea6bo5S1hwqVUZxHdo1gFHSe/t63jxQIF4yL9aKw==}
-
   '@atcute/lexicons@1.1.0':
     resolution: {integrity: sha512-LFqwnria78xLYb62Ri/+WwQpUTgZp2DuyolNGIIOV1dpiKhFFFh//nscHMA6IExFLQRqWDs3tTjy7zv0h3sf1Q==}
-
-  '@badrap/valita@0.4.5':
-    resolution: {integrity: sha512-4QwGbuhh/JesHRQj79mO/l37PvJj4l/tlAu7+S1n4h47qwaNpZ0WDvIwUGLYUsdi9uQ5UPpiG9wb1Wm3XUFBUQ==}
-    engines: {node: '>= 18'}
 
   '@dprint/darwin-arm64@0.41.0':
     resolution: {integrity: sha512-P9PtcQI0mrI4U6yyd+/iI664BHSqC9KTS6ogq0ptEdnLtlaWzf09D1nv6FBaHiG9m3conuBRlPsoUqt3j6PZ2w==}
@@ -645,21 +632,9 @@ snapshots:
       '@atcute/atproto': 3.1.0
       '@atcute/lexicons': 1.1.0
 
-  '@atcute/client@4.0.3':
-    dependencies:
-      '@atcute/identity': 1.0.3
-      '@atcute/lexicons': 1.1.0
-
-  '@atcute/identity@1.0.3':
-    dependencies:
-      '@atcute/lexicons': 1.1.0
-      '@badrap/valita': 0.4.5
-
   '@atcute/lexicons@1.1.0':
     dependencies:
       esm-env: 1.2.2
-
-  '@badrap/valita@0.4.5': {}
 
   '@dprint/darwin-arm64@0.41.0':
     optional: true
