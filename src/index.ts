@@ -1,7 +1,10 @@
+/// <reference types="@atcute/atproto" preserve="true" />
+/// <reference types="@atcute/bluesky" preserve="true" />
+
 import type { ComAtprotoSyncSubscribeRepos } from "@atcute/atproto";
-import type {} from "@atcute/bluesky"; // Needed for collection autocomplete
 import type { Cid, Did } from "@atcute/lexicons";
 import type { Records as _Records } from "@atcute/lexicons/ambient";
+import type { InferInput } from "@atcute/lexicons/validations";
 import { WebSocket } from "partysocket";
 import { TinyEmitter } from "tiny-emitter";
 
@@ -258,7 +261,8 @@ const jetstream = new Jetstream({
 }
 
 /** Resolves a lexicon name to its record operation. */
-export type ResolveLexicon<T extends string> = T extends keyof Records ? Records[T] : { $type: T };
+export type ResolveLexicon<T extends string> = T extends keyof Records ? InferInput<Records[T]>
+	: { $type: T };
 
 /** Checks if any member of a union is assignable to a given operation. */
 type UnionMemberIsAssignableTo<Union, AssignableTo> =
