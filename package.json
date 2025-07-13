@@ -2,7 +2,7 @@
 	"name": "@skyware/jetstream",
 	"type": "module",
 	"description": "A fully typed client for the Bluesky Jetstream (https://github.com/bluesky-social/jetstream) service.",
-	"version": "0.2.4",
+	"version": "0.2.5",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"license": "MPL-2.0",
